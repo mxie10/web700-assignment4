@@ -77,7 +77,7 @@ const getStudentsByCourse = (course) => {
 const getStudentsByNum = (num) => {
     return new Promise((resolve, reject) => {
         try{
-            const student = students.filter((student,index)=> student.studentNum === num);
+            const student = students.find((student,index)=> student.studentNum === num);
             if(student.length !== 0){
                 resolve(student);
             }else{
@@ -91,6 +91,7 @@ const getStudentsByNum = (num) => {
 }
 
 const addStudent = (params) => {
+    console.log(params);
     return new Promise((resolve,reject)=>{
         try{
             let studentNum = dataCollection.students.length + 1;
@@ -101,7 +102,7 @@ const addStudent = (params) => {
             let addressCity = params.address_city;
             let addressProvince = params.address_province;
             let isTeachingAssistant = params.ta;
-            let enrollmentStatus = params.fulltime || params.parttime;
+            let enrollmentStatus = params.status;
             let selectedCourse = params.select_courses;
 
             if(params.ta === undefined){
@@ -131,6 +132,63 @@ const addStudent = (params) => {
     })
 }
 
+const updateStudent = (params) => {
+    return new Promise((resolve,reject)=>{
+        try{
+            let studentNum = parseInt(params.studentNum);
+            let firstName = params.firstName;
+            let lastName = params.lastName;
+            let email = params.email;
+            let addressStreet = params.address_street;
+            let addressCity = params.address_city;
+            let addressProvince = params.address_province;
+            let isTeachingAssistant = params.ta;
+            let enrollmentStatus = params.status;
+            let selectedCourse = params.select_courses;
+
+            if(params.ta === undefined){
+                isTeachingAssistant = false;
+            }else{
+                isTeachingAssistant = true;
+            }
+
+            const updatedStudent = students.find((student)=>{
+                return student.studentNum === studentNum;
+            })
+
+            updatedStudent.firstName = firstName;
+            updatedStudent.lastName = lastName;
+            updatedStudent.email = email;
+            updatedStudent.addressStreet = addressStreet;
+            updatedStudent.addressCity = addressCity;
+            updatedStudent.addressProvince = addressProvince;
+            updatedStudent.TA = isTeachingAssistant;
+            updatedStudent.status = enrollmentStatus;
+            updatedStudent.course = selectedCourse;
+
+            resolve();
+        }catch(e){
+            reject(e);
+        }
+    })
+}
+
+const getCourseById = (id) => {
+    return new Promise((resolve, reject) => {
+        try{
+            const course = courses.find((course,index)=> course.courseId === id);
+            if(course.length !== 0){
+                console.log('has data');
+                resolve(course);
+            }else{
+                reject("no result returned");
+            }
+        }catch(e){
+            return new Error(e)
+        }
+    })
+}
+
 module.exports = {
     dataCollection,
     initialize,
@@ -139,5 +197,7 @@ module.exports = {
     getCourses,
     getStudentsByCourse,
     getStudentsByNum,
-    addStudent
+    addStudent,
+    getCourseById,
+    updateStudent
 };
