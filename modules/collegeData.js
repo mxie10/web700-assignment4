@@ -133,6 +133,7 @@ const addStudent = (params) => {
 }
 
 const updateStudent = (params) => {
+    console.log("params.ta",typeof(params.ta));
     return new Promise((resolve,reject)=>{
         try{
             let studentNum = parseInt(params.studentNum);

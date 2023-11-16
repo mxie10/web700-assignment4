@@ -1,9 +1,9 @@
 /********************************************************************************** 
- * WEB700 – Assignment 4
+ * WEB700 – Assignment 5
  * I declare that this assignment is my own work in accordance with Seneca Academic Policy.
  * No part of this assignment has been copied manually or electronically from any other source* 
  * (including web sites) or distributed to other students.
- * Name: Mingyuan Xie Student ID:117518225  Date: 2023-10-01
+ * Name: Mingyuan Xie Student ID:117518225  Date: 2023-11-16
 ********************************************************************************/
 
 const exphbs = require('express-handlebars');
@@ -95,7 +95,7 @@ app.get("/student/add", (req, res) => {
 app.post('/students/add', (req, res) => {
     collegeData.addStudent(req.body).then(data=>{
         console.log('Received response:', data);
-        return res.json(data);
+        res.redirect("/students");
     }).catch(error=>{
         res.send(error.message);
     })
