@@ -1,8 +1,8 @@
 <div class="row">
-    <div class="col-md-12"><br>
-        <h2>Students</h2>
-        <hr />
-        <div class="table-responsive">
+    <div class="col-md-12">
+        <br>
+        <h2><a href="/student/add" class="btn btn-success float-end">Add New Student</a></h2>
+        <div class="table-responsive" style="margin-top: 70px">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -12,17 +12,19 @@
                         <th scope="col">Address</th>
                         <th scope="col">Status</th>
                         <th scope="col">Course ID</th>
+                        <th scope="col">Operation</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{#each student}}
                     <tr>
                         <td>{{studentNum}}</td>
-                        <td><a href="/student/{{studentNum}}">{{firstName}} {{lastName}}</a></td>
+                        <td><a href="/students/{{studentNum}}">{{firstName}} {{lastName}}</a></td>
                         <td><a href="mailto:{{email}}">{{email}}</a></td>
                         <td>{{addressStreet}} {{addressCity}} {{addressProvince}}</td>
                         <td>{{status}}</td>
                         <td><a href="/students?course={{course}}">{{course}}</a></td>
+                        <td><a href="/student/delete/{{studentNum}}" class="btn btn-danger">Remove</a></td>
                     </tr>
                     {{/each}}
                 </tbody>

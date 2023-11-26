@@ -62,35 +62,39 @@ app.get("/students", (req, res) => {
     if (course) {
         collegeData.getStudentsByCourse(course)
             .then((data) => {
-                res.render('students',{student:data})
+                if(data.length > 0){
+                    res.render('students',{student:data})
+                }else{
+                    res.render("students",{ message: "no results" });
+                }
             }).catch(error => {
-                res.render("students", {message: "no results"});
+                res.status(500).json({ message: "no results" });
             })
     } else {
         collegeData.getAllStudents().then(data => {
-            res.render('students',{student:data})
+            if(data.length > 0){
+                res.render('students',{student:data})
+            }else{
+                res.render("students",{ message: "no results" });
+            }
         }).catch(error => {
-            res.render("students", {message: "no results"});
+            console.log("error:",error);
+            res.status(500).json({ message: error.message });
         })
     }
 })
 
-app.get("/students/:num", (req, res) => {
-    const num = parseInt(req.params.num);
-    if(num){
-        collegeData.getStudentsByNum(num).then(data => {
-            res.render('students',{student:data});
-        }).catch(error => {
-            res.render("students", {message: "no results"});
-        })
-    }else{
-        res.render("students", {message: "no results"});
-    }
+app.get("/courses", (req, res) => {
+    collegeData.getCourses().then(data => {
+        if(data.length > 0){
+            res.render('courses',{courses:data})
+        }else{
+            res.render("courses",{ message: "no results" });
+        }
+    }).catch(error => {
+        res.status(500).json({ message: error.message });
+    })
 })
-
-app.get("/student/add", (req, res) => {
-    res.render('addStudent',{layout:'main'});
-});
 
 app.post('/students/add', (req, res) => {
     collegeData.addStudent(req.body).then(data=>{
@@ -101,34 +105,72 @@ app.post('/students/add', (req, res) => {
     })
 });
 
+app.get("/student/add", (req, res) => {
+    collegeData.getCourses().then(data=>{
+        res.render('addStudent',{courses:data});
+    }).catch(err=>{
+        res.render('addStudent',{courses:[]});
+    })
+});
+
+app.get("/students/:studentNum", (req, res) => {
+    // Initialize an empty object to store the values
+    let viewData = {};
+
+    // Get student data by student number
+    collegeData.getStudentsByNum(req.params.studentNum)
+        .then((studentData) => {
+            if (studentData) {
+                // Store student data in the "viewData" object as "student"
+                console.log("in???");
+                viewData.student = studentData;
+            } else {
+                // Set student to null if none were returned
+                viewData.student = null;
+            }
+        })
+        .catch((err) => {
+            // Set student to null if there was an error
+            viewData.student = null;
+        })
+        .then(() => {
+            // Get courses data
+            return collegeData.getCourses();
+        })
+        .then((coursesData) => {
+            // Store course data in the "viewData" object as "courses"
+            viewData.courses = coursesData;
+
+            // Loop through viewData.courses and add a "selected" property
+            // to the matching viewData.courses object
+            for (let i = 0; i < viewData.courses.length; i++) {
+                if (viewData.courses[i].courseId == viewData.student.course) {
+                    viewData.courses[i].selected = true;
+                }
+            }
+        })
+        .catch((err) => {
+            // Set courses to empty if there was an error
+            viewData.courses = [];
+        })
+        .then(() => {
+            if (viewData.student == null) {
+                // If no student - return an error
+                res.status(404).send("Student Not Found");
+            } else {
+                // Render the "student" view
+                // console.log("viewDatasssss",.firstName);
+                res.render("student", { student: viewData.student[0],courses:viewData.courses });
+            }
+        });
+});
+
 app.post("/student/update", (req, res) => {
+    console.log("in /student/update?");
     collegeData.updateStudent(req.body).then(data=>{
         res.redirect("/students");
     })
 });
-
-app.get("/student/:id", (req, res) => {
-    const studentId = parseInt(req.params.id);
-    collegeData.getStudentsByNum(studentId).then((data)=>{
-        res.render('student',{student:data});
-    })
-});
-
-app.get("/tas", (req, res) => {
-    collegeData.getTAs().then(data => {
-        res.json(data);
-    }).catch(error => {
-        res.status(500).json({ message: "no results" });
-    })
-})
-
-app.get("/courses", (req, res) => {
-    collegeData.getCourses().then(data => {
-        res.render('courses',{course:data})
-    }).catch(error => {
-        res.render("courses", {message: "no results"});
-    })
-})
 
 app.get("/", (req, res) => {
     res.render('home', {
@@ -146,17 +188,58 @@ app.get("/htmlDemo", (req, res) => {
    res.render('htmlDemo',{layout:'main'});
 });
 
+app.get('/course/add',(req,res)=>{
+    console.log("in???");
+    res.render('addCourse',{layout:'main'});
+});
 
+app.post('/course/add',(req,res)=>{
+    collegeData.addCourse(req.body).then(data=>{
+        console.log('Received response:', data);
+        res.redirect("/courses");
+    }).catch(error=>{
+        res.send(error.message);
+    })
+});
 
 app.get('/course/:id',(req,res)=>{
     const id = parseInt(req.params.id);
-    console.log("id=",id);
+    console.log("in:id??=",id);
     collegeData.getCourseById(id).then((data,index)=>{
-        res.render('course',{course:data});
+        if(data){
+            console.log("data:",data);
+            res.render('course',{course:data[0]});
+        }else{
+            res.status(404).send("Course Not Found")
+        }
     }).catch(err=>{
-        res.render("course", {message: "no results"});
+        res.status(500).json({ message: err.message});
     })
-})
+});
+
+app.post('/course/update',(req,res)=>{
+    collegeData.updateCourse(req.body).then(data=>{
+        res.redirect("/courses");
+    })
+});
+
+app.get('/course/delete/:id',(req,res)=>{
+    const id = parseInt(req.params.id);
+    collegeData.deleteCourseById(id).then(data=>{
+        res.redirect("/courses");
+    }).catch(err=>{
+        res.status(500).send('Unable to Remove Course / Course not found)');
+    })
+});
+
+app.get('/student/delete/:studentNum',(req,res)=>{
+    const num = parseInt(req.params.studentNum);
+    collegeData.deleteStudentByNum(num).then(data=>{
+        res.redirect("/students");
+    }).catch(err=>{
+        res.status(500).send(err);
+    })
+});
 
 app.use((req, res) => {
     res.status(404).send('Page Not Found');
